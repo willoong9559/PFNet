@@ -1,0 +1,38 @@
+DATA_CONFIG:
+    DATASET_NAME: SemanticKitti
+    DATASET_PATH: ./data/sequences
+    DATASET_CONFIG: ./semantic-kitti.yaml
+    DATALOADER:
+        NUM_WORKER: 8
+
+OPTIMIZE:
+    LR: 0.0005
+    MAX_EPOCH: 50
+
+MODEL:
+    NAME: PFNet
+    NCLASS: 19
+    LIMS: [[-48, 48], [-48, 48], [-3, 1.8]] # [[-84, 84], [-84, 84], [-36, 6]] #
+    SIZES: [480, 480, 48] #  [840, 840, 420] #
+    SCALES: [0.5, 1]
+    GRID_METERS: [0.2, 0.2, 0.1]
+    OFFSET: 0.5
+    TARGET_SCALE: 1
+    POOLING_SCALE: [0.5, 1, 2, 4, 6, 8, 12]
+    SEM_PRETRAIN: ./weights/kitti_backbone_v2.pth
+
+    POLAR_INSTANCE:
+        RADIAL_BINS: 480
+        ANGULAR_BINS: 360
+        MAX_RADIUS: 70.0
+        CENTER_THRESHOLD: 0.1
+        NMS_KERNEL: 5
+        TOP_K: 100
+        CENTER_LOSS_WEIGHT: 100.0
+        OFFSET_LOSS_WEIGHT: 1.0
+        CENTER_SIGMA: 2.0
+
+    POST_PROCESSING:
+        MERGE_FUNC: merge_ins_sem
+
+
