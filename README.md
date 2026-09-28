@@ -1,6 +1,6 @@
 # PFNet
 
-PFNet 是用于 SemanticKITTI 点云全景分割的 PyTorch 实现。它保留 GASNv2 语义骨干，并采用 Panoptic-PolarNet 风格的极坐标实例头。
+PFNet 是基于 [Panoptic-PolarNet](https://github.com/edwardzhou130/panoptic-polarnet) 改造的 SemanticKITTI 点云全景分割 PyTorch 实现：保留 GASNv2 作为语义骨干，并使用 Panoptic-PolarNet 的极坐标中心热图、偏移回归与投票式实例解码。
 
 ## 运行环境
 
@@ -35,10 +35,10 @@ data/
 
 ## 权重准备
 
-创建 `weights/` 目录，并放入：
+仓库中的 `weights/` 目录已包含运行所需权重：
 
 - 语义骨干权重：配置中 `MODEL.SEM_PRETRAIN` 指向的文件（默认 `weights/kitti_backbone_v2.pth`）。
-- PFNet 完整模型权重：用于验证、测试或继续训练时，通过 `--pretrained_ckpt` 指定。该权重包含极坐标实例头。
+- PFNet 完整模型权重：`weights/kitti_pfnet.pth`，可通过 `--pretrained_ckpt` 指定。该权重包含极坐标实例头。
 
 ## 两阶段流程与 GASNv2
 

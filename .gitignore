@@ -2,7 +2,6 @@
 fullres*
 __pycache__
 data
-*.pt
 local_train.sh
 capture
 capture/*
@@ -10,6 +9,4 @@ json
 output
 *.so
 *.egg-info
-weights
-*.pth
 .vscode
