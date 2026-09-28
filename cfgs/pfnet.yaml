@@ -25,14 +25,12 @@ MODEL:
         RADIAL_BINS: 480
         ANGULAR_BINS: 360
         MAX_RADIUS: 70.0
-        CENTER_THRESHOLD: 0.1
-        NMS_KERNEL: 5
-        TOP_K: 100
-        CENTER_LOSS_WEIGHT: 100.0
+        PSEUDO_GRID_SIZE: 0.2
+        PSEUDO_NMS_KERNEL: 5
+        PSEUDO_CLASS_KERNEL: 5
+        # SemanticKITTI 8 个 thing 类的默认合并半径（米），需按数据集调整。
+        CENTER_GROUP_RADII: [2.0, 1.0, 1.0, 4.0, 4.0, 1.0, 1.0, 1.0]
         OFFSET_LOSS_WEIGHT: 1.0
-        CENTER_SIGMA: 2.0
 
     POST_PROCESSING:
         MERGE_FUNC: merge_ins_sem
-
-

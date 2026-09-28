@@ -1,4 +1,4 @@
-"""PFNet with a frozen GASNv2 semantic backbone and polar-BEV instance head."""
+"""PFNet with a frozen GASNv2 semantic backbone and PHNet-style decoding."""
 
 import numpy as np
 import torch
@@ -8,7 +8,7 @@ from .polar_instance import PolarInstanceHead
 
 
 class PFNet(Base):
-    """Use GASNv2 for semantics and Panoptic-PolarNet-style center voting for instances."""
+    """Use GASNv2 for semantics and pseudo-heatmap clustering for instances."""
 
     def __init__(self, cfg):
         super().__init__(cfg)
@@ -18,12 +18,13 @@ class PFNet(Base):
             radial_bins=instance_cfg.RADIAL_BINS,
             angular_bins=instance_cfg.ANGULAR_BINS,
             max_radius=instance_cfg.MAX_RADIUS,
-            center_threshold=instance_cfg.CENTER_THRESHOLD,
-            nms_kernel=instance_cfg.NMS_KERNEL,
-            top_k=instance_cfg.TOP_K,
-            center_loss_weight=instance_cfg.CENTER_LOSS_WEIGHT,
+            pseudo_grid_size=instance_cfg.PSEUDO_GRID_SIZE,
+            bev_x_range=cfg.MODEL.LIMS[0],
+            bev_y_range=cfg.MODEL.LIMS[1],
+            pseudo_nms_kernel=instance_cfg.PSEUDO_NMS_KERNEL,
+            pseudo_class_kernel=instance_cfg.PSEUDO_CLASS_KERNEL,
+            center_group_radii=instance_cfg.CENTER_GROUP_RADII,
             offset_loss_weight=instance_cfg.OFFSET_LOSS_WEIGHT,
-            center_sigma=instance_cfg.CENTER_SIGMA,
         )
         self.fix_parameters()
 
@@ -78,6 +79,5 @@ class PFNet(Base):
             output.update(sem_preds=merged_semantics, ins_preds=point_instances)
             return output
 
-        center_loss = instance_output['loss_center']
         offset_loss = instance_output['loss_offset']
-        return {'loss_center': center_loss, 'loss_offset': offset_loss, 'loss': center_loss + offset_loss}
+        return {'loss_offset': offset_loss, 'loss': offset_loss}
