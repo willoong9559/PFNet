@@ -422,12 +422,15 @@ class GASNv2(nn.Module):
         if pretrained is not None:
             print('load backbone parameters')
             checkpoint = torch.load(pretrained, map_location='cpu')
+            state_dict = checkpoint.get('state_dict', checkpoint.get('model_state', checkpoint))
             s = self.state_dict()
-            for key, val in checkpoint['state_dict'].items():
+            for key, val in state_dict.items():
 
                 # process ckpt from parallel module
                 if key[:6] == 'module':
                     key = key[7:]
+                if key.startswith('sem_backbone.'):
+                    key = key[len('sem_backbone.'):]
 
                 if key in s and s[key].shape == val.shape:
                     s[key][...] = val

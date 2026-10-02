@@ -19,7 +19,7 @@ class Base(torch.nn.Module):
             grid_meters=cfg.MODEL.GRID_METERS,
             scales=cfg.MODEL.SCALES,
             pooling_scale=cfg.MODEL.POOLING_SCALE,
-            sizes=cfg.MODEL.SIZES,
+            sizes=cfg.MODEL.get('SIZES', None),
             n_class=cfg.MODEL.NCLASS,
             pretrained=cfg.MODEL.get('SEM_PRETRAIN', None),
         )

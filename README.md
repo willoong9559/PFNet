@@ -62,7 +62,7 @@ DATA_CONFIG:
   DATASET_PATH: /path/to/SemanticKITTI/sequences
 ```
 
-仓库不再附带跨环境预训练权重。先使用 `cfgs/gasn_semantic.yaml` 从零训练语义骨干；完成后，将实例配置的 `MODEL.SEM_PRETRAIN` 设置为验证通过的语义 checkpoint。当前 PFNet 只训练实例头，旧实例检查点不能直接作为该实例头的最终权重。
+语义训练：`python cfg_train.py --config cfgs/gasn_semantic.yaml --batch_size 6 --log_dir ./output --tag gasn_semantic`。语义 checkpoint 输出到 `output/gasn_semantic/ckpt/checkpoint_epoch_*.pth`；训练实例头前，将 `cfgs/pfnet.yaml` 的 `MODEL.SEM_PRETRAIN` 改为该 checkpoint 的绝对路径。
 
 ## 使用
 
