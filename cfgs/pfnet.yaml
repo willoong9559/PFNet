@@ -1,6 +1,6 @@
 DATA_CONFIG:
     DATASET_NAME: SemanticKitti
-    DATASET_PATH: ./data/sequences
+    DATASET_PATH: /run/media/song/1F6B8E85CBE1052C/dataset/sequencesbak
     DATASET_CONFIG: ./semantic-kitti.yaml
     DATALOADER:
         NUM_WORKER: 8
@@ -8,6 +8,7 @@ DATA_CONFIG:
 OPTIMIZE:
     LR: 0.0005
     MAX_EPOCH: 50
+    EVAL_INTERVAL: 5
 
 MODEL:
     NAME: PFNet

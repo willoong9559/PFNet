@@ -195,7 +195,7 @@ def BaseMain(args, cfg):
     while True:
         epoch += 1
         if 'MAX_EPOCH' in cfg.OPTIMIZE.keys():
-            if epoch > cfg.OPTIMIZE.MAX_EPOCH:
+            if epoch >= cfg.OPTIMIZE.MAX_EPOCH:
                 break
 
         ### train one epoch
@@ -205,7 +205,6 @@ def BaseMain(args, cfg):
             pbar = tqdm(total=len(train_dataset_loader), dynamic_ncols=True)
         for i_iter, inputs in enumerate(train_dataset_loader):
             # torch.cuda.empty_cache()
-            torch.autograd.set_detect_anomaly(True)
             model.train()
             optimizer.zero_grad()
             inputs['i_iter'] = i_iter
@@ -237,7 +236,15 @@ def BaseMain(args, cfg):
         if rank == 0:
             pbar.close()
 
-        ### evaluate after each epoch
+        # Validate periodically, while always retaining the final-epoch evaluation.
+        eval_interval = int(cfg.OPTIMIZE.get('EVAL_INTERVAL', 1))
+        is_final_epoch = (epoch + 1) >= cfg.OPTIMIZE.MAX_EPOCH
+        if (epoch + 1) % eval_interval != 0 and not is_final_epoch:
+            if lr_scheduler is not None:
+                lr_scheduler.step(epoch)
+            continue
+
+        ### evaluate periodically
         logger.info('----EPOCH {} Evaluating----'.format(epoch))
         model.eval()
         min_points = 50
@@ -254,6 +261,7 @@ def BaseMain(args, cfg):
             with torch.no_grad():
                 ret_dict = model(inputs, is_test=True, before_merge_evaluator=before_merge_evaluator,
                                      after_merge_evaluator=after_merge_evaluator, require_merge=True)
+            tracking_loss += ret_dict['loss'].item()
             if rank == 0:
                 vbar.set_postfix({'loss': ret_dict['loss'].item()})
                 vbar.update(1)

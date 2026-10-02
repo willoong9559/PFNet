@@ -1,5 +1,8 @@
 import numpy as np
-import spconv
+try:
+    import spconv.pytorch as spconv
+except ImportError:
+    import spconv
 import torch
 import torch.distributed as dist
 import torch.nn as nn
@@ -427,9 +430,13 @@ class GASNv2(nn.Module):
 
                 if key in s and s[key].shape == val.shape:
                     s[key][...] = val
+                elif key in s and val.ndim == 5 and s[key].shape == val.permute(4, 0, 1, 2, 3).shape:
+                    s[key][...] = val.permute(4, 0, 1, 2, 3).contiguous()
+                    print('converted sparse convolution weight {}'.format(key))
                 elif key not in s:
                     print('ignore weight from not found key {}'.format(key))
-                else:                    print('ignore weight of mistached shape in key {}'.format(key))
+                else:
+                    print('ignore weight of mistached shape in key {}'.format(key))
 
             self.load_state_dict(s)
 

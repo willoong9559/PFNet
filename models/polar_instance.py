@@ -2,6 +2,9 @@
 
 import math
 
+import numpy as np
+from scipy.spatial import cKDTree
+
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -105,7 +108,7 @@ class PolarInstanceHead(nn.Module):
         return F.smooth_l1_loss(offsets[mask.expand_as(offsets)], target[mask.expand_as(target)]) * self.offset_loss_weight
 
     def shifted_xy(self, polar_indices, offsets):
-        point_offsets = offsets[polar_indices[:, 0], :, polar_indices[:, 1], polar_indices[:, 2]].transpose(0, 1)
+        point_offsets = offsets[polar_indices[:, 0], :, polar_indices[:, 1], polar_indices[:, 2]]
         shifted_radius = (polar_indices[:, 1].float() + point_offsets[:, 0] + 0.5) / self.radial_bins * self.max_radius
         shifted_angle = (polar_indices[:, 2].float() + point_offsets[:, 1] + 0.5) / self.angular_bins * (2 * math.pi) - math.pi
         return torch.stack([shifted_radius * torch.cos(shifted_angle), shifted_radius * torch.sin(shifted_angle)], dim=1)
@@ -146,6 +149,7 @@ class PolarInstanceHead(nn.Module):
         return center_xy, labels
 
     def group_center_ids(self, center_cells, center_labels):
+        """Merge same-class centers using a spatial index rather than all pairs."""
         parents = list(range(center_cells.shape[0]))
 
         def find(index):
@@ -154,16 +158,18 @@ class PolarInstanceHead(nn.Module):
                 index = parents[index]
             return index
 
-        for base in range(center_cells.shape[0]):
-            base_class = int(center_labels[base].item())
-            if base_class not in self.thing_classes:
+        centers_np = center_cells.detach().cpu().numpy()
+        labels_np = center_labels.detach().cpu().numpy()
+        for class_index, class_id in enumerate(self.thing_classes):
+            member_indices = np.flatnonzero(labels_np == class_id)
+            if member_indices.size < 2:
                 continue
-            radius = self.center_group_radii[self.thing_classes.index(base_class)] / self.pseudo_grid_size
-            for target in range(base + 1, center_cells.shape[0]):
-                if int(center_labels[target].item()) != base_class:
-                    continue
-                if torch.norm(center_cells[base].float() - center_cells[target].float()).item() <= radius:
-                    parents[find(target)] = find(base)
+            radius = self.center_group_radii[class_index] / self.pseudo_grid_size
+            tree = cKDTree(centers_np[member_indices])
+            for first, second in tree.query_pairs(radius):
+                first_index = int(member_indices[first])
+                second_index = int(member_indices[second])
+                parents[find(second_index)] = find(first_index)
 
         roots = [find(index) for index in range(center_cells.shape[0])]
         root_to_instance = {}
@@ -197,7 +203,10 @@ class PolarInstanceHead(nn.Module):
                 self.bev_x_range[0] + (centers[:, 0].float() + 0.5) * self.pseudo_grid_size,
                 self.bev_y_range[0] + (centers[:, 1].float() + 0.5) * self.pseudo_grid_size,
             ], dim=1)
-            nearest = torch.cdist(points, centers_xy).argmin(dim=1)
+            nearest = torch.cat([
+                torch.cdist(points[start:start + 2048], centers_xy).argmin(dim=1)
+                for start in range(0, points.shape[0], 2048)
+            ])
             instance_ids[point_mask] = grouped_ids[nearest]
         return instance_ids, class_images
 
