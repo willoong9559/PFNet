@@ -55,7 +55,8 @@ class NaiveSparseSyncBatchNorm1d(nn.BatchNorm1d):
     def forward(self, input):
         assert input.dtype == torch.float32, \
             f'input should be in float32 type, got {input.dtype}'
-        if not self.training or dist.get_world_size() == 1:
+        if (not self.training or not dist.is_available() or
+                not dist.is_initialized() or dist.get_world_size() == 1):
             return super().forward(input)
         assert input.shape[0] > 0, 'SyncBN does not support empty inputs'
         C = input.shape[1]

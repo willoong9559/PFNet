@@ -62,7 +62,7 @@ DATA_CONFIG:
   DATASET_PATH: /path/to/SemanticKITTI/sequences
 ```
 
-语义骨干权重由 `MODEL.SEM_PRETRAIN` 指定，默认是 `weights/kitti_backbone_v2.pth`。请先准备 GASNv2 权重；语义阶段的训练和权重来源见 [GASN/PcdSeg](https://github.com/ItIsFriday/PcdSeg)。当前 PFNet 只训练实例头，旧实例检查点不能直接作为该实例头的最终权重。
+仓库不再附带跨环境预训练权重。先使用 `cfgs/gasn_semantic.yaml` 从零训练语义骨干；完成后，将实例配置的 `MODEL.SEM_PRETRAIN` 设置为验证通过的语义 checkpoint。当前 PFNet 只训练实例头，旧实例检查点不能直接作为该实例头的最终权重。
 
 ## 使用
 

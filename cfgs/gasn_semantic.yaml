@@ -1,0 +1,26 @@
+DATA_CONFIG:
+    DATASET_NAME: SemanticKitti
+    DATASET_PATH: /run/media/song/1F6B8E85CBE1052C/dataset/sequencesbak
+    DATASET_CONFIG: ./semantic-kitti.yaml
+    DATALOADER:
+        NUM_WORKER: 8
+
+OPTIMIZE:
+    LR: 0.0010
+    MAX_EPOCH: 50
+    EVAL_INTERVAL: 5
+    SCHEDULER:
+        TYPE: multi-step
+        STEP: [15, 25, 35, 45]
+        GAMMA: 0.25
+
+MODEL:
+    NAME: Base
+    NCLASS: 19
+    LIMS: [[-48, 48], [-48, 48], [-3, 1.8]]
+    SCALES: [0.5, 1]
+    GRID_METERS: [0.2, 0.2, 0.1]
+    OFFSET: 0.5
+    TARGET_SCALE: 1
+    POOLING_SCALE: [0.5, 1, 2, 4, 6, 8, 12]
+    SEM_PRETRAIN: null

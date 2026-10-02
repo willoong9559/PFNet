@@ -20,7 +20,7 @@ MODEL:
     OFFSET: 0.5
     TARGET_SCALE: 1
     POOLING_SCALE: [0.5, 1, 2, 4, 6, 8, 12]
-    SEM_PRETRAIN: ./weights/kitti_backbone_v2.pth
+    SEM_PRETRAIN: null
 
     POLAR_INSTANCE:
         RADIAL_BINS: 480
